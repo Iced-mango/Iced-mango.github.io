@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>宁波dp3871「立方」题解（通过拆分存储实现简易高精度）</title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css">
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css">
+    
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <a id="cover"></a>
+    <div id="header">
+    <div class="header">
+        <div class="vertical">
+            <div class="inner">
+                <h1 class="header-subtitle">宁波dp3871「立方」题解（通过拆分存储实现简易高精度）</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2020-08-25
+                        </span>
+                        
+                            <span id="/2020/08/25/solution-nbdp3871/" class="leancloud_visitors" data-flag-title="宁波dp3871「立方」题解（通过拆分存储实现简易高精度）">
+                                <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                            </span>
+                        
+                        <span>
+                            <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2020/08/25/solution-nbdp3871/"></span>
+                        </span>  
+                    </p>                 
+                </div>
+            </div>
+        </div>
+        <canvas id="articleHeaderCanvas"></canvas>
+    </div>
+</div>
+    <div id="container">
+    <div id="content">
+        <div id="article">
+    <div class="toc"></div>
+    <div class="article-body">
+        <p>有时候，我们会遇到高精度的题目，但是又不想花费大量时间来写传统的数组高精度，这该怎么办呢？<del>（写完之后我才发现代码量比传统高精度还要大）</del></p>
+<span id="more"></span>
+
+<p><strong>先看<a target="_blank" rel="noopener" href="https://www.luogu.com.cn/problem/U175607">题目</a></strong></p>
+<p>看到这个数据范围：0&lt;n&lt;1e28，28位，肯定都能想到要用高精度，但是正如前面所说，不想花费大量精力来调试传统高精度的代码，怎么做呢？</p>
+<p>这里我们来介绍一种<strong>通过拆分存储实现的简易高精度</strong></p>
+<h3 id="1-原理介绍"><a href="#1-原理介绍" class="headerlink" title="1. 原理介绍"></a>1. 原理介绍</h3><p>假如现在有一个28位整数，我们可以把它拆分成四段</p>
+<p>如图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lwsblog/images@master/img%E6%8B%86%E5%88%86.png"></p>
+<p>拆分出来的四个数字可以用四个变量存储。</p>
+<p>你完全可以理解为使用了1e7进制，这样理解会非常便于后面代码的编写</p>
+<h3 id="2-代码实现简易高精度"><a href="#2-代码实现简易高精度" class="headerlink" title="2. 代码实现简易高精度"></a>2. 代码实现简易高精度</h3><h4 id="2-1-存储"><a href="#2-1-存储" class="headerlink" title="2.1. 存储"></a>2.1. 存储</h4><p>首先，我们用一个结构体来存储四位（段）数字</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">big_num</span>&#123;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> a,b,c,d;<span class="comment">//这里为什么用unsigned long long后面题解会讲</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-处理进位"><a href="#2-2-处理进位" class="headerlink" title="2.2. 处理进位"></a>2.2. 处理进位</h4><p>这里我们把进位先写出来，后面会方便很多</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">carry</span><span class="params">(big_num &amp;a)</span></span>&#123;</span><br><span class="line">    <span class="comment">//------------------start processing carry</span></span><br><span class="line">    a.c += a.d/rnm;</span><br><span class="line">    a.d %= rnm;</span><br><span class="line">    <span class="comment">//------------------C carry complete.</span></span><br><span class="line">    a.b += a.c/rnm;</span><br><span class="line">    a.c %= rnm;</span><br><span class="line">    <span class="comment">//------------------B carry complete.</span></span><br><span class="line">    a.a += a.b/rnm;</span><br><span class="line">    a.b %= rnm;</span><br><span class="line">    <span class="comment">//------------------A carry complete.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-比较大小"><a href="#2-3-比较大小" class="headerlink" title="2.3. 比较大小"></a>2.3. 比较大小</h4><p>比较大小直接按照字典序比较就可以了</p>
+<p>从高位到低位比下去</p>
+<p>小于</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">a_less_than_b</span><span class="params">(big_num a,big_num b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a.a&gt;b.a)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a&lt;b.a)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a==b.a)&#123;</span><br><span class="line">        <span class="keyword">if</span>(a.b&gt;b.b)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b&lt;b.b)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b==b.b)&#123;</span><br><span class="line">            <span class="keyword">if</span>(a.c&gt;b.c)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c&lt;b.c)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c==b.c)&#123;</span><br><span class="line">                <span class="keyword">if</span>(a.d&gt;b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d&lt;b.d)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d==b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>大于</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">a_greater_than_b</span><span class="params">(big_num a,big_num b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a.a&gt;b.a)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a&lt;b.a)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a==b.a)&#123;</span><br><span class="line">        <span class="keyword">if</span>(a.b&gt;b.b)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b&lt;b.b)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b==b.b)&#123;</span><br><span class="line">            <span class="keyword">if</span>(a.c&gt;b.c)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c&lt;b.c)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c==b.c)&#123;</span><br><span class="line">                <span class="keyword">if</span>(a.d&gt;b.d)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d&lt;b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d==b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>等于</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">a_equal_to_b</span><span class="params">(big_num a,big_num b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a.a==b.a&amp;&amp;a.b==b.b&amp;&amp;a.c==b.c&amp;&amp;a.d==b.d;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>大于等于和小于等于如果需要的话可以自行手写，直接return a_equal_to_b或a_greater(less)_than_b就可以了</p>
+<h4 id="2-4-加减法"><a href="#2-4-加减法" class="headerlink" title="2.4. 加减法"></a>2.4. 加减法</h4><p>由于<a target="_blank" rel="noopener" href="https://www.luogu.com.cn/problem/U175607">本题</a>中未使用到加减法，故我给出的加减程序都是在编写此文档的时候临时写的，没有上机测试，如果有问题请留言</p>
+<p>加法非常简单，把四位数都加起来然后运行进位程序</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">big_num <span class="title">add</span><span class="params">(a,b)</span></span>&#123;</span><br><span class="line">	big_num result;</span><br><span class="line">    result.a = <span class="number">0</span>;</span><br><span class="line">    result.b = <span class="number">0</span>;</span><br><span class="line">    result.c = <span class="number">0</span>;</span><br><span class="line">    result.d = <span class="number">0</span>;<span class="comment">//一定要初始化！！！</span></span><br><span class="line">	result.a = a.a+b.a;</span><br><span class="line">	result.b = a.b+b.b;</span><br><span class="line">	result.c = a.c+b.c;</span><br><span class="line">	result.d = a.d+b.d;</span><br><span class="line">	<span class="built_in">carry</span>(result);</span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>减法与加法唯一不同的就是要处理借位问题，其实也不难</p>
+<p>出于种种未解决的问题，这里给出计算|a-b|的程序：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">big_num <span class="title">minus</span><span class="params">(a,b)</span></span>&#123;</span><br><span class="line">    big_num result;</span><br><span class="line">    result.a = <span class="number">0</span>;</span><br><span class="line">    result.b = <span class="number">0</span>;</span><br><span class="line">    result.c = <span class="number">0</span>;</span><br><span class="line">    result.d = <span class="number">0</span>;<span class="comment">//一定要初始化！！！</span></span><br><span class="line">	<span class="keyword">if</span>(<span class="built_in">a_less_than_b</span>(a,b))&#123;</span><br><span class="line">        <span class="built_in">swap</span>(a.a,b.a);</span><br><span class="line">        <span class="built_in">swap</span>(a.b,b.b);</span><br><span class="line">        <span class="built_in">swap</span>(a.c,b.c);</span><br><span class="line">        <span class="built_in">swap</span>(a.d,b.d);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(a.d&lt;b.d)&#123;a.c-=<span class="number">1</span>;a.d+=<span class="number">10000000</span>;&#125;</span><br><span class="line">	result.d = a.d-b.d;</span><br><span class="line">    <span class="keyword">if</span>(a.c&lt;b.c)&#123;a.b-=<span class="number">1</span>;a.c+=<span class="number">10000000</span>;&#125;</span><br><span class="line">	result.c = a.c-b.c;</span><br><span class="line">    <span class="keyword">if</span>(a.b&lt;b.b)&#123;a.c-=<span class="number">1</span>;a.d+=<span class="number">10000000</span>;&#125;</span><br><span class="line">	result.b = a.b-b.b;</span><br><span class="line">    <span class="comment">//最高位要是还小于那就遇到鬼了</span></span><br><span class="line">	result.a = a.a-b.a;</span><br><span class="line">	<span class="built_in">carry</span>(result);</span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-5-乘法"><a href="#2-5-乘法" class="headerlink" title="2.5. 乘法"></a>2.5. 乘法</h4><p>如果是两个big_num相乘，那乘出来的结果可能就不止四位了，我们的结构体存不下，目前除了<a target="_blank" rel="noopener" href="https://blog.csdn.net/nimabide_01/article/details/78943148">这位老哥的解决方案（使用数组）</a>我还没有找到更好的</p>
+<h4 id="2-6-除法"><a href="#2-6-除法" class="headerlink" title="2.6. 除法"></a>2.6. 除法</h4><p><del>除法我压根没找到解决方案 建议去写传统高精度或者转行Python</del></p>
+<h4 id="2-7-幂"><a href="#2-7-幂" class="headerlink" title="2.7. 幂"></a>2.7. 幂</h4><p>好了，<del>扯了那么多没用的</del>终于进入正题了</p>
+<p>（我给出的程序只支持求x^y，x为无符号long long，y<del>我觉得</del>只能是short以内，同样是因为存不下 <del>主要是因为懒</del>）</p>
+<p>原理很好懂：将x的四位分别乘以底数，乘完之后进行进位处理，像这样乘y次</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">big_num <span class="title">my_pow</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base_number,<span class="keyword">int</span> power)</span></span>&#123;</span><br><span class="line">    big_num result;</span><br><span class="line">    result.a = <span class="number">0</span>;</span><br><span class="line">    result.b = <span class="number">0</span>;</span><br><span class="line">    result.c = <span class="number">0</span>;</span><br><span class="line">    result.d = <span class="number">1</span>;<span class="comment">//一定要初始化！！！</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>;i&lt;=power;i++)&#123;</span><br><span class="line">        result.d = result.d*base_number;</span><br><span class="line">        result.c = result.c*base_number;</span><br><span class="line">        result.b = result.b*base_number;</span><br><span class="line">        result.a = result.a*base_number;</span><br><span class="line">        <span class="built_in">carry</span>(result);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-8-字符串-string-转big-num"><a href="#2-8-字符串-string-转big-num" class="headerlink" title="2.8. 字符串(string)转big_num"></a>2.8. 字符串(string)转big_num</h4><p>用于把输入的字符串转为big_num</p>
+<p>我原本写的代码中是直接转的，并没有写成独立的函数</p>
+<p>所以下面的代码同样是临时写的，没有上机，有问题请留言</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">big_num <span class="title">transform</span><span class="params">(string a)</span></span>&#123;</span><br><span class="line">    big_num result;</span><br><span class="line">    result.a = <span class="number">0</span>;</span><br><span class="line">    result.b = <span class="number">0</span>;</span><br><span class="line">    result.c = <span class="number">0</span>;</span><br><span class="line">    result.d = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> loa = a.<span class="built_in">length</span>();</span><br><span class="line">	<span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">	    <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)result.d += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform low(not full)</span></span><br><span class="line">	    <span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=loa<span class="number">-7</span>;i--)&#123;</span><br><span class="line">	    result.d += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform low(full)</span></span><br><span class="line">	&#125;</span><br><span class="line">	a.<span class="built_in">erase</span>(loa<span class="number">-7</span>);</span><br><span class="line">	loa = a.<span class="built_in">length</span>();</span><br><span class="line">	<span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">	    <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)result.c += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-low(not full)</span></span><br><span class="line">	    <span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=loa<span class="number">-7</span>;i--)&#123;</span><br><span class="line">	    result.c += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-low(full)</span></span><br><span class="line">	&#125;</span><br><span class="line">	a.<span class="built_in">erase</span>(loa<span class="number">-7</span>);</span><br><span class="line">	loa = a.<span class="built_in">length</span>();</span><br><span class="line">	<span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">	    <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)result.b += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-high(not full)</span></span><br><span class="line">	    <span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=loa<span class="number">-7</span>;i--)&#123;</span><br><span class="line">	    result.b += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-high(full)</span></span><br><span class="line">	&#125;</span><br><span class="line">	a.<span class="built_in">erase</span>(loa<span class="number">-7</span>);</span><br><span class="line">	loa = a.<span class="built_in">length</span>();</span><br><span class="line">	<span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">	    <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)result.a += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform high(not full)</span></span><br><span class="line">	    <span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)&#123;</span><br><span class="line">	    result.a += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform high(full)</span></span><br><span class="line">	&#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中最核心的一句无外乎是</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">result.x += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);</span><br></pre></td></tr></table></figure>
+
+<p>你可能会问 <em><strong>哎，一个转换的程序为什么要用到pow()函数呢？</strong></em>举个栗子你就知道了</p>
+<p>当这个字符串为”1234”</p>
+<p>此时<code>i=2</code>，<code>loa=4</code></p>
+<p><code>i</code>指向第三个元素，即’3’</p>
+<p>我们现在想在<code>result.x</code>的<strong>倒数第二位</strong>添加3</p>
+<p>不难发现，我们使用的是<strong>倒序</strong>从字符串里<strong>取数</strong>，<strong>由低位到高位</strong>转化到big_num的</p>
+<p>所以实际上就是在往十位添加30，即+30</p>
+<p>通过观察，我们发现每次转化进x的数y必须乘以10^当前的位数z，上述文字用伪代码表达出来就是<strong>x = y*pow(10,z)</strong></p>
+<p>所以x,y,z具体是什么呢？</p>
+<p>x很容易可以看出就是我们转化进big_num里的<code>result.x</code>，y也很容易能看出是int(a[i]-48)<del>如果你问我为什么要减48那我劝你放弃吧编程吧，毕竟人生苦短</del></p>
+<p>开个玩笑，ASCII码中字符0对应的值是48，要减去这个差值</p>
+<p>那么，z是什么呢？</p>
+<p>由于我们<strong>取数</strong>的顺序和<strong>转化</strong>的顺序相反</p>
+<p>所以z必然得在<code>loa-i</code>左右</p>
+<p>但是他们之间是有差值的，因为i是从0可以取到0，而loa从1开始，所以不难发现z其实是<code>loa-i-1</code></p>
+<h3 id="3-进入正题-题解"><a href="#3-进入正题-题解" class="headerlink" title="3. 进入正题(题解)"></a>3. 进入正题(题解)</h3><p>讲了这么多，你是不是已经忘了这是一篇题解了？XD</p>
+<p>这里再次放上**<a target="_blank" rel="noopener" href="https://www.luogu.com.cn/problem/U175607">题目链接</a>**</p>
+<p>分析题目数据，我们可以看出此题的搜索范围在1-10^(28/3)，为了保险，我们就搜1到1e10-1</p>
+<p>（前面我们曾留下一个疑问：为什么结构体里定义的是无符号long long？这是因为我们的底数有十位，而我一开始写的每个变量也存十位，两个相乘后要暂时存到一个变量里，之后再处理进位，但两个十位数相乘肯定得放个支持20位的变量，所以用了unsigned long long，后来发现十位出了很多错，所以现在改成7位了，用long long存也行）</p>
+<p><strong>搜索范围庞大，我们使用二分查找</strong></p>
+<p>这里给出二分的模板：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binarySearch</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> target)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> left = <span class="number">0</span>, right = ...;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(...) &#123;</span><br><span class="line">        <span class="keyword">int</span> mid = (right + left) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (nums[mid] == target) &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nums[mid] &lt; target) &#123;</span><br><span class="line">            left = ...</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nums[mid] &gt; target) &#123;</span><br><span class="line">            right = ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ...;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然，我们不是在有序数组里找，我们找的是数字</p>
+<p>这里给出适用于本题的二分代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">binarySearch</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> left = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> right = <span class="number">999999999</span>;</span><br><span class="line">    <span class="keyword">while</span>(left &lt;= right) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> mid = (right + left) / <span class="number">2</span>;</span><br><span class="line">        big_num temp = <span class="built_in">my_pow</span>(mid,<span class="number">3</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">a_less_than_b</span>(temp,limit))</span><br><span class="line">            left = mid + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">a_greater_than_b</span>(temp,limit))</span><br><span class="line">            right = mid - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">a_equal_to_b</span>(temp,limit))&#123;</span><br><span class="line">            <span class="keyword">return</span> mid;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> right;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后，将大小比较程序、幂、转换和二分整合一下，再添加<strong>一点点</strong>细节，就行了：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> rnm 10000000;<span class="comment">//日常祖安码风</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">big_num</span>&#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> a,b,c,d;</span><br><span class="line">&#125;;</span><br><span class="line">big_num limit;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">carry</span><span class="params">(big_num &amp;a)</span></span>&#123;</span><br><span class="line">    <span class="comment">//------------------start processing carry</span></span><br><span class="line">    a.c += a.d/rnm;</span><br><span class="line">    a.d %= rnm;</span><br><span class="line">    <span class="comment">//------------------C carry complete.</span></span><br><span class="line">    a.b += a.c/rnm;</span><br><span class="line">    a.c %= rnm;</span><br><span class="line">    <span class="comment">//------------------B carry complete.</span></span><br><span class="line">    a.a += a.b/rnm;</span><br><span class="line">    a.b %= rnm;</span><br><span class="line">    <span class="comment">//------------------A carry complete.</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function">big_num <span class="title">my_pow</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base_number,<span class="keyword">int</span> power)</span></span>&#123;</span><br><span class="line">    big_num result;</span><br><span class="line">    result.a = <span class="number">0</span>;</span><br><span class="line">    result.b = <span class="number">0</span>;</span><br><span class="line">    result.c = <span class="number">0</span>;</span><br><span class="line">    result.d = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>;i&lt;=power;i++)&#123;</span><br><span class="line">        result.d = result.d*base_number;</span><br><span class="line">        result.c = result.c*base_number;</span><br><span class="line">        result.b = result.b*base_number;</span><br><span class="line">        result.a = result.a*base_number;</span><br><span class="line">        <span class="built_in">carry</span>(result);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">a_less_than_b</span><span class="params">(big_num a,big_num b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a.a&gt;b.a)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a&lt;b.a)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a==b.a)&#123;</span><br><span class="line">        <span class="keyword">if</span>(a.b&gt;b.b)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b&lt;b.b)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b==b.b)&#123;</span><br><span class="line">            <span class="keyword">if</span>(a.c&gt;b.c)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c&lt;b.c)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c==b.c)&#123;</span><br><span class="line">                <span class="keyword">if</span>(a.d&gt;b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d&lt;b.d)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d==b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">a_greater_than_b</span><span class="params">(big_num a,big_num b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a.a&gt;b.a)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a&lt;b.a)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span>(a.a==b.a)&#123;</span><br><span class="line">        <span class="keyword">if</span>(a.b&gt;b.b)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b&lt;b.b)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span>(a.b==b.b)&#123;</span><br><span class="line">            <span class="keyword">if</span>(a.c&gt;b.c)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c&lt;b.c)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span>(a.c==b.c)&#123;</span><br><span class="line">                <span class="keyword">if</span>(a.d&gt;b.d)<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d&lt;b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span>(a.d==b.d)<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">a_equal_to_b</span><span class="params">(big_num a,big_num b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a.a==b.a&amp;&amp;a.b==b.b&amp;&amp;a.c==b.c&amp;&amp;a.d==b.d;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//二分起始位置:left 1 right 1e10-1</span></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="title">binarySearch</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> left = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> right = <span class="number">999999999</span>;</span><br><span class="line">    <span class="keyword">while</span>(left &lt;= right) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> mid = (right + left) / <span class="number">2</span>;</span><br><span class="line">        big_num temp = <span class="built_in">my_pow</span>(mid,<span class="number">3</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">a_less_than_b</span>(temp,limit))</span><br><span class="line">            left = mid + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">a_greater_than_b</span>(temp,limit))</span><br><span class="line">            right = mid - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">a_equal_to_b</span>(temp,limit))&#123;</span><br><span class="line">            <span class="keyword">return</span> mid;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> right;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">start_this_shit</span><span class="params">()</span></span>&#123;<span class="comment">//日常祖安发泄 见笑了</span></span><br><span class="line">    string a;</span><br><span class="line">    cin&gt;&gt;a;</span><br><span class="line">    <span class="keyword">short</span> loa = a.<span class="built_in">length</span>();</span><br><span class="line">    cout&lt;&lt;loa&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">        <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)limit.d += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform low(not full)</span></span><br><span class="line">        cout&lt;&lt;<span class="built_in">binarySearch</span>();</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=loa<span class="number">-7</span>;i--)&#123;</span><br><span class="line">        limit.d += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform low(full)</span></span><br><span class="line">    &#125;</span><br><span class="line">    a.<span class="built_in">erase</span>(loa<span class="number">-7</span>);</span><br><span class="line">    loa = a.<span class="built_in">length</span>();</span><br><span class="line">    <span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">        <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)limit.c += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-low(not full)</span></span><br><span class="line">        cout&lt;&lt;<span class="built_in">binarySearch</span>();</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=loa<span class="number">-7</span>;i--)&#123;</span><br><span class="line">        limit.c += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-low(full)</span></span><br><span class="line">    &#125;</span><br><span class="line">    a.<span class="built_in">erase</span>(loa<span class="number">-7</span>);</span><br><span class="line">    loa = a.<span class="built_in">length</span>();</span><br><span class="line">    <span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">        <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)limit.b += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-high(not full)</span></span><br><span class="line">        cout&lt;&lt;<span class="built_in">binarySearch</span>();</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=loa<span class="number">-7</span>;i--)&#123;</span><br><span class="line">        limit.b += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform mid-high(full)</span></span><br><span class="line">    &#125;</span><br><span class="line">    a.<span class="built_in">erase</span>(loa<span class="number">-7</span>);</span><br><span class="line">    loa = a.<span class="built_in">length</span>();</span><br><span class="line">    <span class="keyword">if</span>(loa&lt;=<span class="number">7</span>)&#123;</span><br><span class="line">        <span class="keyword">if</span>(loa&gt;<span class="number">0</span>)<span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)limit.a += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform high(not full)</span></span><br><span class="line">        cout&lt;&lt;<span class="built_in">binarySearch</span>();</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = loa<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)&#123;</span><br><span class="line">        limit.a += (a[i]<span class="number">-48</span>)*<span class="built_in">pow</span>(<span class="number">10</span>,loa-i<span class="number">-1</span>);<span class="comment">//transform high(full)</span></span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;<span class="built_in">binarySearch</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">int</span> launch = <span class="built_in">start_this_shit</span>();<span class="comment">//起飞飞飞飞飞</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//宇宙究极无敌华丽的主程序，没有之一，一个字符都没有</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+        <p class="suffix-end">__END__</p>
+        <div class="suffix-box">
+            <div class="suffix-box-left">
+                <img src="https://cdn.jsdelivr.net/gh/lwsblog/images@master/img202111012208038.jpg" alt="LittleLittleFish">
+            </div>
+            <div class="suffix-box-right">
+                <span class="suffix-box-title">文章作者</span>：LittleLittleFish
+                <br>
+                <span class="suffix-box-title">文章出处</span>：<a href="/2020/08/25/solution-nbdp3871/" target="_blank">宁波dp3871「立方」题解（通过拆分存储实现简易高精度）</a>
+                <br>
+                <span class="suffix-box-title">作者签名</span>：桥洞底下盖小被，小被里面流眼泪
+                <br>
+                <span class="suffix-box-title">关于主题</span>：<a href="https://github.com/first19326/Hexo-LiveForCode" target="_blank">Hexo - LiveForCode</a>
+                <br>
+                <span class="suffix-box-title">版权声明</span>：文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+                <br>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <div class="article-footer">
+        
+            <div class="category">
+                分类：
+                
+                    <a href="/category/%E9%A2%98%E8%A7%A3/">题解</a>
+                
+            </div>
+        
+        
+            <div class="tag">
+                标签：
+                
+                    <a href="/tag/C-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E6%94%BE%E5%BC%83/">C++从入门到放弃</a>
+                
+                    <a href="/tag/%E9%A2%98%E8%A7%A3/">题解</a>
+                
+                    <a href="/tag/%E9%AB%98%E7%B2%BE%E5%BA%A6/">高精度</a>
+                
+                    <a href="/tag/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/">二分查找</a>
+                
+            </div>
+        
+        <div class="article-prev-next">
+            
+                <a href="/2020/09/01/other-good-websites/" class="prev-prefix">« </a> 上一篇：    <a href="/2020/09/01/other-good-websites/" title="发布于 2020-09-01 09:58">番外：实用网站推荐</a>
+                <br>
+            
+            
+                <a href="/2020/08/24/solution-luogu1002/" class="next-prefix">» </a> 下一篇：    <a href="/2020/08/24/solution-luogu1002/" title="发布于 2020-08-24 10:12">洛谷P1002「过河卒」题解</a>
+            
+        </div>
+    </div>
+    
+    <div class="article-comments">
+        <div class="comments-title">
+            评论列表
+        </div>
+        <div class="comments-content">
+        </div>
+    </div>
+
+</div>
+
+    </div>
+</div>
+    <div id="footer"></div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar"></div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user"><span></span></div>        
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul></ul> 
+            </div> 
+            <div class="menu-link"></div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+
+    
+        <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css">
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js"></script>
+        <meting-js id="5038773325" lrcshow="true" server="netease" type="playlist" fixed="true" autoplay="true" loop="all" order="list" preload="auto" volume="0.67" mutex="true"></meting-js>
+    
+    
+    <div class="wrap-right"></div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : 'first19326',
+        GitHubRepositories : 'Hexo-LiveForCode',
+
+        BlogUser      : 'LittleLittleFish',
+        BlogAvatar    : 'https://cdn.jsdelivr.net/gh/lwsblog/images@master/img202111012208038.jpg',
+        BlogStartDate : '2020-01-01',
+
+        WebsiteTitleBlur         : '-.-',
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : '(*´∇｀*) 欢迎回来!',
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : 'https://cdn.jsdelivr.net/gh/lwsblog/images@master/img202111012240635.png',
+
+        ProgressBar: {
+            id       : 'topProgressBar',
+            color    : '#77B6FF',
+            height   : '2px',
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound: {
+                tension  : 16,
+                friction : 5
+            },
+            spinner: {
+                id     : 'spinner',
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : '#F0F0F0',
+                    stroke     : '#272633',
+                    base       : '',
+                    child      : '#272633'
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : 'rgba(255, 255, 255, .2)',
+            clearOffset : 0.3
+        },
+
+        ArticleHeaderAnimationRendered : false,
+        ArticleHeaderAnimation         : {
+            triW                  : 14,
+            triH                  : 20,
+            neighbours            : [
+                
+                    'side',
+                
+                    'top',
+                
+                    'bottom',
+                
+            ],
+            speedTrailAppear      : 0.1,
+            speedTrailDisappear   : 0.1,
+            speedTriOpen          : 1,
+            trailMaxLength        : 30,
+            trailIntervalCreation : 100,
+            delayBeforeDisappear  : 2,
+            colors                : [
+                
+                    '#96EDA6',
+                
+                    '#5BC6A9',
+                
+                    '#38668C',
+                
+                    '#374D84',
+                
+                    '#BED5CB',
+                
+                    '#62ADC6',
+                
+                    '#8EE5DE',
+                
+                    '#304E7B',
+                
+            ]
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : '60%',
+            colorBrightness  : '50%',
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : 'random',
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                'https://api.xygeng.cn/Bing/',
+            
+        ],
+        HomeBannerText  : '',
+
+        ArticleHeaderImage : [
+            
+                'https://cdn.jsdelivr.net/gh/lwsblog/images@master/img202111022127617.jpg',
+            
+        ],
+
+        OtherBannerText : '',
+
+        MenuList : [
+            
+                {
+                    name   : '首页',
+                    href   : '/',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '标签',
+                    href   : '/tag',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '分类',
+                    href   : '/category',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '归档',
+                    href   : '/archive',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '赞赏',
+                    href   : '/donate',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '关于',
+                    href   : '/about',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '留言板',
+                    href   : '/comment',    
+                    target : '',
+                    class  : ''
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        icon : 'icon-weibo', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-wechat', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-qq', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-github', 
+                        url  : 'https://github.com/first19326'
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : {
+            icon    : 'like-fill',
+            left    : '人生若只如初见',
+            right   : '何事秋风悲画扇'
+        },
+        ThemeInfo   : true,
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                'Based on cnblogs theme SimpleMemory.',
+                            
+                                '',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'SimpleMemory Author:',
+                            
+                                'BNDong',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'Theme:',
+                            
+                                'LiveForCode',
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : '',
+
+        Donate : {
+            paypal  : '',
+            bitcoin : '',
+            alipay  : 'https://cdn.jsdelivr.net/gh/Iced-mango/img@master/20200531090553.jpg',
+            wechat  : 'https://cdn.jsdelivr.net/gh/Iced-mango/img@master/20200531221739.jpg'
+        },
+
+        Code : {
+            style : 'normal'
+        },  
+
+        Search : {
+            applicationID : '010C3EANT8',
+            apiKey        : 'c7abab9f11b79102b9aff7fe6d41447d',
+            indexName     : 'Notes',
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : '搜索',
+                empty       : '未发现与 「${query}」 相关的内容',
+                stats       : '${hits} 条相关条目，使用了 ${time} 毫秒',
+            }
+        }, 
+
+        Valine : {
+            switch         : true,
+            el             : '.comments-content',
+            appId          : '8S5IDgc8ecbOBEdfWQVnxsrD-gzGzoHsz',
+            appKey         : 'KAs3HPynw11QwxIj6CrgSLIB',
+            placeholder    : '你是我一生只会遇见一次的惊喜...',
+            avatar         : 'mm',
+            meta           : 'nick,mail,link',
+            requiredFields : 'nick,mail',
+            pageSize       : 5,
+            lang           : 'zh-cn',
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : '.toc',
+            contentSelector       : '.article-body',
+            headingSelector       : 'h1, h2, h3, h4, h5',
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : '.toc',
+            positionFixedClass    : 'toc-fixed',
+            fixedSidebarOffset    : '',
+        },
+
+        Require : {
+            baseUrl     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/',
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : 'Meting'
+        },
+        APlayer : {
+            container : '.aplayer',
+            fixed     : true,
+            autoplay  : false,
+            loop      : 'all',
+            order     : 'random',
+            preload   : 'auto',
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : 'aLIEz',
+                        artist : 'mizuki（瑞葵）',
+                        cover  : '/music/cover/aLIEz.jpg',
+                        url    : '/music/song/aLIEz.mp3',
+                        lrc    : '/music/lrc/aLIEz.lrc'
+                    },
+                
+                    {
+                        name   : 'Endless Tears',
+                        artist : 'CLIFF EDGE',
+                        cover  : '/music/cover/Endless Tears.jpg',
+                        url    : '/music/song/Endless Tears.mp3',
+                        lrc    : '/music/lrc/Endless Tears.lrc'
+                    },
+                
+                    {
+                        name   : 'Miracle',
+                        artist : 'Cascada',
+                        cover  : '/music/cover/Miracle.jpg',
+                        url    : '/music/song/Miracle.mp3',
+                        lrc    : '/music/lrc/Miracle.lrc'
+                    },
+                
+                    {
+                        name   : 'Roll The Dice',
+                        artist : '高珊',
+                        cover  : '/music/cover/Roll The Dice.jpg',
+                        url    : '/music/song/Roll The Dice.mp3',
+                        lrc    : '/music/lrc/Roll The Dice.lrc'
+                    },
+                
+                    {
+                        name   : 'See You Again',
+                        artist : 'Charlie Puth, Wiz Khalifa',
+                        cover  : '/music/cover/See You Again.jpg',
+                        url    : '/music/song/See You Again.mp3',
+                        lrc    : '/music/lrc/See You Again.lrc'
+                    },
+                
+                    {
+                        name   : 'Traveling Light',
+                        artist : 'Joel Hanson, Sara Groves',
+                        cover  : '/music/cover/Traveling Light.jpg',
+                        url    : '/music/song/Traveling Light.mp3',
+                        lrc    : '/music/lrc/Traveling Light.lrc'
+                    },
+                
+                    {
+                        name   : '痴心绝对',
+                        artist : '李圣杰',
+                        cover  : '/music/cover/痴心绝对.jpg',
+                        url    : '/music/song/痴心绝对.mp3',
+                        lrc    : '/music/lrc/痴心绝对.lrc'
+                    },
+                
+                    {
+                        name   : '好想大声说爱你',
+                        artist : 'BAAD（バード）',
+                        cover  : '/music/cover/好想大声说爱你.jpg',
+                        url    : '/music/song/好想大声说爱你.mp3',
+                        lrc    : '/music/lrc/好想大声说爱你.lrc'
+                    },
+                
+            ]
+        },
+        Meting : {
+            id       : '5038773325', 
+            lrcshow  : true, 
+            server   : 'netease', 
+            type     : 'playlist', 
+            fixed    : true, 
+            autoplay : true, 
+            loop     : 'all', 
+            order    : 'list', 
+            preload  : 'auto', 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/website/lazyload.svg'
+        },
+  
+        Style : {
+            aplayer          : 'https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css',
+            archive          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/archive.css',
+            donate           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/donate.css',
+            fancybox         : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/jquery.fancybox.css',
+            footer           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/footer.css',
+            iconfont         : 'https://at.alicdn.com/t/font_1546312_l3yohatebw.css',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/index.css',
+            menuBubble       : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/menu-bubble.css',
+            page             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/page.css',
+            post             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css',
+            search           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css',
+            tocbot           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/tocbot.css',
+            normal           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css',
+            night            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/night.css',
+            clipboard        : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/clipboard.css'
+        },
+
+        Script: {
+            aplayer          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js',
+            config           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.config.js',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js',
+            instantSearch    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js',
+            jQuery           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js',
+            loading          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/loading.js',
+            meting           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js',
+            iscroll          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js',
+            require          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.min.js'
+        },
+
+        Font: {
+            LongCang   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css',
+            Monda      : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css',
+            NotoSansSC : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css',
+            Playball   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css',
+            PTMono     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css',
+            RobotoSlab : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css',
+            Rosario    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css',
+            UbuntuMono : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css'
+        },
+
+        Suffix : {
+            about : '桥洞底下盖小被，小被里面流眼泪'
+        },
+            
+        Theme : {
+            url  : 'https://github.com/first19326/Hexo-LiveForCode',
+            name : 'Hexo - LiveForCode'
+        }  
+    };
+</script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js"></script>
+</body>
+</html>
